@@ -83,7 +83,7 @@ public class UShiftordersUpdate {
         logger.debug("Testing UShiftordersUpdate");
         SpecialParam shiftorder_key = aParam.getSpecialParameters().get("shiftorder.key");
         SpecialParam shiftorder_status = aParam.getSpecialParameters().get("shiftorder.status");
-        SpecialParam operation_costcenter = aParam.getSpecialParameters().get("operation.costcenter");
+        //SpecialParam operation_costcenter = aParam.getSpecialParameters().get("operation.costcenter");
         
         if (shiftorder_status != null && shiftorder_key != null ? shiftorder_key.getValue() != null && !"".equals(shiftorder_status.getValue()) && !"".equals(shiftorder_key.getValue()) : false)
         {
@@ -101,33 +101,28 @@ public class UShiftordersUpdate {
                 "   oi.ab_auftrag_nr, " +
                 "   IsNull(oi.ag_bez, '') ag_bez, " +
                 "   IsNull(oi.artikel, '') artikel, " +
-                "   uso.shiftorder_nr, " +
                 "   IsNull(oi.kostenstelle, '') kostenstelle, " +
                 String.format("   IsNull((Select Top 1 IsNull(auftrag_nr, '') From auftrags_bestand Where ag_bez like N'%s' and Left(auftrag_nr, 20) = Left(oi.ab_auftrag_nr, 20)), '') auftrag_nr2, ", debugMode ? VP_OP_DEBUGMODE : VP_OP_WORKMODE) +
-                "   IsNull(uso.masch_nr, '') masch_nr, " +
-                "   oi.mgruppe, " +
-                "   (Select a_status From auftrag_status Where auftrag_nr = oi.ab_auftrag_nr) a_status, " +
-                "   IsNull(uso.term_anf_dat, IsNull((Select Max(term_anf_dat) From u_shiftoperations Where shiftorder_nr = sh.shiftorder_nr), Format(CURRENT_TIMESTAMP,'yyyy-MM-dd 00:00:00.000'))) term_anf_dat, " +
-                "   IsNull(uso.term_anf_zeit,	Case When sh.shift_nr = 'A' Then 28800 When sh.shift_nr = 'B' Then 72000 End) term_anf_zeit, " +
-                "   IsNull(uso.term_end_dat, IsNull((Select Max(term_end_dat) From u_shiftoperations Where shiftorder_nr = sh.shiftorder_nr), Format(CURRENT_TIMESTAMP,'yyyy-MM-dd 00:00:00.000'))) term_end_dat, " +
-                "   IsNull(uso.term_end_zeit,	Case When sh.shift_nr = 'A' Then 72000 When sh.shift_nr = 'B' Then 28800 End) term_end_zeit, " +
+                "   IsNull(uso.masch_nr, IsNull(oi.masch_nr, '')) masch_nr, " +
+                "   IsNull(oi.mgruppe, '') mgruppe, " +
+                "   (Select a_status From hydra1.hydadm.auftrag_status Where auftrag_nr = oi.ab_auftrag_nr) a_status, " +
+                "   IsNull(uso.term_anf_dat, IsNull((Select Max(term_anf_dat) From hydra1.hydadm.u_shiftoperations Where shiftorder_id = ush.id), Format(CURRENT_TIMESTAMP,'yyyy-MM-dd 00:00:00.000'))) term_anf_dat, " +
+                "   IsNull(uso.term_anf_zeit, Case When ush.shift_nr = 'A' Then 28800 When ush.shift_nr = 'B' Then 72000 End) term_anf_zeit, " +
+                "   IsNull(uso.term_end_dat, IsNull((Select Max(term_end_dat) From hydra1.hydadm.u_shiftoperations Where shiftorder_id = ush.id), Format(CURRENT_TIMESTAMP,'yyyy-MM-dd 00:00:00.000'))) term_end_dat, " +
+                "   IsNull(uso.term_end_zeit,	Case When ush.shift_nr = 'A' Then 72000 When ush.shift_nr = 'B' Then 28800 End) term_end_zeit, " +
                 "   IsNull(hb.subkey1, '') Workplace, " +
                 "   IsNull(hb.subkey2, '') MESOrder, " +
-                String.format("   IsNull(hb2.subkey4, N'%s') UserCode, ", uContext.getUserId()) +
+                "   IsNull(hb2.subkey4, N'" + uContext.getUserId() + "') UserCode, " +
                 "   IsNull(hb.hyuser, '') HydraUser " +
                 " From " +
-                "   U_OperationInfo oi " +
-                String.format("   Left Join u_shiftorders sh on sh.id = %s ", shiftorder_key.getValue()) +
-                "   Left Outer Join u_shiftoperations uso on uso.auftrag_nr = oi.ab_auftrag_nr and uso.shiftorder_nr = sh.shiftorder_nr " +
-                "   Left Join hybuch hb  on hb.subkey2 = oi.ab_auftrag_nr and hb.typ = 'A' " +
-                "   Left Join hybuch hb2 on hb2.subkey2 = hb.subkey2 and hb2.subkey4 is not null " +
+                "   hydra1.hydadm.u_shiftorders ush " +
+                "   Left Join hydra1.hydadm.u_shiftoperations uso on uso.shiftorder_id = ush.id " +
+                "   Left Join hydra1.hydadm.U_OperationInfo oi on Left(oi.ab_auftrag_nr, 20) in (Case When uso.auftrag_nr is not null Then Left(uso.auftrag_nr, 20) Else (Select Left(attrib_str05, 20) From hydra1.hydadm.los_bestand Where losnr = uso.losnr) End) " +
+                "   Left Join hydra1.hydadm.hybuch hb  on hb.subkey2 = oi.ab_auftrag_nr and hb.typ = 'A' " +
+                "   Left Join hydra1.hydadm.hybuch hb2 on hb2.subkey2 = hb.subkey2 and hb2.subkey4 is not null " +
                 " Where " +
-                "   ak_auftrag_nr in (Select Distinct Left(auftrag_nr, 20) From u_shiftoperations Where shiftorder_nr = sh.shiftorder_nr) "; 
-                
-                if (operation_costcenter != null ? (operation_costcenter.getValue() != null ? !"".equals(operation_costcenter.getValue()) : false) : false)
-                {
-                    sql += String.format(" and oi.kostenstelle = N'%s' ", operation_costcenter.getValue());
-                }
+                "   (oi.masch_nr in (Select res_nr From hydra1.hydadm.res_bestand Where res_typ = 'MNR' and kostenstelle like (Select [site] + '%' From hydra1.hydadm.u_shiftorders Where id = ush.id)) or oi.mgruppe in (Select mgruppe From hydra1.hydadm.maschinen Where masch_nr in ((Select res_nr From hydra1.hydadm.res_bestand Where res_typ = 'MNR' and kostenstelle like (Select [site] + '%' From hydra1.hydadm.u_shiftorders Where id = ush.id))))) " +
+                String.format("   and ush.id = %s", shiftorder_key != null ? shiftorder_key.getValue() : "-1");
                        
                 if (debugPrint) write("UShiftordersUpdate", sql);
 
@@ -137,8 +132,6 @@ public class UShiftordersUpdate {
                 List<String> lm; 
                 Map<String, String> up = new HashMap<String, String>();
                         
-                if (debugPrint) write("UShiftordersUpdate", sql);
-                
                 ResultSet DataSet = stmt.executeQuery(sql);
                 while (DataSet.next())
                 {
@@ -180,10 +173,10 @@ public class UShiftordersUpdate {
                 "   u_shiftorders " +
                 " Set " +
                 String.format(
-                "   s_status = '%s' ", shiftorder_status.getValue()) +
+                "   s_status = '%s' ", shiftorder_status != null ? shiftorder_status.getValue() : "C") +
                 " Where " + 
                 String.format(
-                "   id = %s", shiftorder_key.getValue());
+                "   id = %s", shiftorder_key != null ? shiftorder_key.getValue() : "-1");
 
                 if (debugPrint) write("UShiftordersUpdate", sql);
                 int affectedRows = stmt.executeUpdate(sql);
@@ -191,7 +184,7 @@ public class UShiftordersUpdate {
                 
                 IHydraCaller caller = (IHydraCaller)factory.fetchUtil("HydraCaller");
             
-                if ("M".equals(shiftorder_status.getValue()))
+                if ("M".equals(shiftorder_status != null ? shiftorder_status.getValue() : ""))
                 {
                     if (debugPrint) write("UShiftordersUpdate", "Remove shift order");
 
@@ -240,16 +233,15 @@ public class UShiftordersUpdate {
                             {
                                 if (debugPrint) write("UShiftordersUpdate", String.format("RET=%s anr %s bloked", retVal.getReturnCode(), ab.get(key).get("ab_auftrag_nr")));
                             }
+                            
+                            
                         }
                     }
                 }
             
-            
-                if ("R".equals(shiftorder_status.getValue()))
+                if ("R".equals(shiftorder_status != null ? shiftorder_status.getValue() : ""))
                 {
-                    if (debugPrint) write("UShiftordersUpdate", "Release shift order");
-                    if (debugPrint) write("UShiftordersUpdate", "serverName = " + ComputerName);
-                
+                    if (debugPrint) write("UShiftordersUpdate", "Release shift order, serverName = " + ComputerName);
                     if (!ab.isEmpty())
                     {
                         for(String key: ab.keySet())

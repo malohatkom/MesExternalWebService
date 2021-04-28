@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package u_sqldialogbuttonmove;
+package u_sqldialogfieldmove;
 
 import de.mpdv.customization.userExit.IUserExitParam;
 import de.mpdv.sdi.data.OperatorType;
@@ -29,13 +29,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 
 
 /**
  *
  * @author mikhail.malokhatko
  */
-public class USqldialogbuttonmoveUpdate {
+public class USqldialogfieldmoveUpdate {
     private final boolean debugPrint = true;
     private final String ComputerName = System.getenv("COMPUTERNAME");
     private final boolean debugMode = "ETN-SRV-MES2".equals(ComputerName);
@@ -57,14 +58,14 @@ public class USqldialogbuttonmoveUpdate {
     
     public void sdiAfterInit(IUserExitParam param) {
         SdiAfterInitParam sdiParam = (SdiAfterInitParam)param.get("param");
-        BapiInterpreterUeContext context = (BapiInterpreterUeContext)param.get("context");
+        //BapiInterpreterUeContext context = (BapiInterpreterUeContext)param.get("context");
         ISystemUtilFactory factory = (ISystemUtilFactory)param.get("factory");
-        Map<String, SpecialParam> specialParameters = sdiParam.getSpecialParameters();
-        SpecialParam usqldlgbut_id = sdiParam.getSpecialParameters().get("usqldlgbut.id");
-        SpecialParam usqldlgbut_usqldlgcfg_id = sdiParam.getSpecialParameters().get("usqldlgbut.usqldlgcfg.id");
-        SpecialParam usqldlgbut_move = sdiParam.getSpecialParameters().get("usqldlgbut.move");
+        Map<String, SpecialParam> specialParameters = new HashMap<String, SpecialParam>();  //sdiParam.getSpecialParameters();
+        SpecialParam udlgfld_id = sdiParam.getSpecialParameters().get("udlgfld.id");
+        SpecialParam udlgcfg_id = sdiParam.getSpecialParameters().get("udlgcfg.id");
+        SpecialParam udlgfld_move = sdiParam.getSpecialParameters().get("udlgfld.move");
         ISdiLoggerProvider loggerProvider = factory.fetchUtil("LoggerProvider");
-        ISdiLogger logger = loggerProvider.fetchLogger(USqldialogbuttonmoveUpdate.class);
+        ISdiLogger logger = loggerProvider.fetchLogger(USqldialogfieldmoveUpdate.class);
         IToNativeSqlConverter sqlConverter = factory.fetchUtil("ToNativeSqlConverter");
         IDbConnectionProvider dbConnectionProvider = factory.fetchUtil("DbConnectionProvider");
         Connection connection = null;
@@ -76,56 +77,60 @@ public class USqldialogbuttonmoveUpdate {
             
             String sqlUpdate = 
                 " Declare " +
-                "   @DPos int       = " + usqldlgbut_usqldlgcfg_id.getValue().toString() + ", " +
-                "   @BPos int       = " + usqldlgbut_id.getValue().toString() + ", " +
-                "   @Move nvarchar  = '" + usqldlgbut_move.getValue().toString() + "', " +
+                "   @DPos int       = " + udlgcfg_id.getValue().toString() + ", " +
+                "   @FPos int       = " + udlgfld_id.getValue().toString() + ", " +
+                "   @Move nvarchar  = '" + udlgfld_move.getValue().toString() + "', " +
                 "   @NPos int       = 1 " +
                 " " +
                 " If @Move = 'U' " +
                 " Begin " +
-                "   If @BPos > 1 " +
+                "   If @FPos > 1 " +
                 "   Begin " +
-                "       Set @NPos = @BPos - 1 " +
-                "       Update hydialogbuttons Set b_nr = 999 Where dlg_verweis = @DPos and b_nr = @BPos " +
-                "       If Exists(Select b_nr From hydialogbuttons Where dlg_verweis = @DPos and b_nr = @NPos) " +
+                "       Set @NPos = @FPos - 1 " +
+                "       Update hydialogfields Set f_nr = 999 Where dlg_verweis = @DPos and f_nr = @FPos " +
+                "       If Exists(Select f_nr From hydialogfields Where dlg_verweis = @DPos and f_nr = @NPos) " +
                 "       Begin " +
-                "           Update hydialogbuttons Set b_nr = @BPos Where dlg_verweis = @DPos and b_nr = @NPos " +
+                "           Update hydialogfields Set f_nr = @FPos Where dlg_verweis = @DPos and f_nr = @NPos " +
                 "       End " +
-                //"       Update hydialogbuttons Set b_nr = @NPos Where dlg_verweis = @DPos and b_nr = 999 " +
+                //"       Update hydialogbuttons Set f_nr = @NPos Where dlg_verweis = @DPos and f_nr = 999 " +
                 "   End " +
                 " End " +
                 " " +
                 " If @Move = 'D' " +
                 " Begin " +
-                "   Set @NPos = (Select Count(b_nr) From hydialogbuttons Where dlg_verweis = @DPos) " +
-                "   If @BPos < @NPos " +
+                "   Set @NPos = (Select Count(f_nr) From hydialogfields Where dlg_verweis = @DPos) " +
+                "   If @FPos < @NPos " +
                 "   Begin " +
-                "       Set @NPos = @BPos + 1 " +
-                "       Update hydialogbuttons Set b_nr = 999 Where dlg_verweis = @DPos and b_nr = @BPos " +
-                "       If Exists(Select b_nr From hydialogbuttons Where dlg_verweis = @DPos and b_nr = @NPos) " +
+                "       Set @NPos = @FPos + 1 " +
+                "       Update hydialogfields Set f_nr = 999 Where dlg_verweis = @DPos and f_nr = @FPos " +
+                "       If Exists(Select f_nr From hydialogfields Where dlg_verweis = @DPos and f_nr = @NPos) " +
                 "       Begin " +
-                "           Update hydialogbuttons Set b_nr = @BPos Where dlg_verweis = @DPos and b_nr = @NPos " +
+                "           Update hydialogfields Set f_nr = @FPos Where dlg_verweis = @DPos and f_nr = @NPos " +
                 "       End " +
-                //"       Update hydialogbuttons Set b_nr = @NPos Where dlg_verweis = @DPos and b_nr = 999 " +
+                //"       Update hydialogbuttons Set f_nr = @NPos Where dlg_verweis = @DPos and f_nr = 999 " +
                 "   End " +
                 " End " +
-                " Set @BPos = 999" +
-                " Select @DPos as dlg_verweis, @BPos as b_nr, @NPos as nb_nr";
+                " Set @FPos = 999" +
+                " Select @DPos as dlg_verweis, @FPos as f_nr, @NPos as nf_nr";
             //stmt = connection.prepareStatement(sqlConverter.toNativeSql(sqlUpdate));
-            write("USqldialogbuttonmoveUpdate", sqlConverter.toNativeSql(sqlUpdate));
+            //write("USqldialogfieldmoveUpdate", sqlConverter.toNativeSql(sqlUpdate));
             //stmt.setInt(1, Integer.parseInt(usqldlgbut_usqldlgcfg_id.getValue().toString()));
             //stmt.setInt(2, Integer.parseInt(usqldlgbut_id.getValue().toString()));
             //stmt.setString(3, usqldlgbut_move.toString());
             ResultSet res = stmt.executeQuery(sqlUpdate);
             if (res != null ? res.next() : false)
             {
-                specialParameters.put("usqldlgbut.usqldlgcfg.id", new SpecialParam("usqldlgbut.usqldlgcfg.id", OperatorType.EQUAL, res != null ? res.getInt("dlg_verweis") : -1));
-                specialParameters.put("usqldlgbut.id", new SpecialParam("usqldlgbut.id", OperatorType.EQUAL, res != null ? res.getInt("b_nr") : -1));
-                specialParameters.put("usqldlgbut.newid", new SpecialParam("usqldlgbut.newid", OperatorType.EQUAL, res != null ? res.getInt("nb_nr") : -1));
+                specialParameters.put("udlgfld.move", new SpecialParam("udlgfld.move", OperatorType.EQUAL, udlgfld_move.getValue() != null ? udlgfld_move.getValue().toString() : ""));
+                specialParameters.put("udlgcfg.id", new SpecialParam("udlgcfg.id", OperatorType.EQUAL, res != null ? res.getInt("dlg_verweis") : -1));
+                //write("USqldialogfieldmoveUpdate", "udlgcfg.id = " + (res != null ? Integer.toString(res.getInt("dlg_verweis")) : -1));
+                specialParameters.put("udlgfld.id", new SpecialParam("udlgfld.id", OperatorType.EQUAL, res != null ? res.getInt("f_nr") : -1));
+                //write("USqldialogfieldmoveUpdate", "udlgfld.id = " + Integer.toString(res != null ? res.getInt("f_nr") : -1));
+                specialParameters.put("udlgfld.newid", new SpecialParam("udlgfld.newid", OperatorType.EQUAL, res != null ? res.getInt("nf_nr") : -1));
+                //write("USqldialogfieldmoveUpdate", "udlgfld.newid = " + Integer.toString(res != null ? res.getInt("nf_nr") : -1));
             }
         } catch (SQLException e) {
             logger.error("Error while executing sql.", e);
-            write("USqldialogbuttonmoveUpdate", e.getMessage());
+            write("USqldialogfieldmoveUpdate", e.getMessage());
             throw new SdiException("lkDbError", "Error while executing sql.", new String[0]);
         } finally {
             try
@@ -138,7 +143,6 @@ public class USqldialogbuttonmoveUpdate {
                 logger.error("Error while executing sql.", e);
             }
         } 
-        SdiAfterInitResult result = new SdiAfterInitResult(specialParameters);
-        param.set("result", result);
+        param.set("result", new SdiAfterInitResult(specialParameters));
     }
 }

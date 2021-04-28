@@ -124,7 +124,7 @@ public class U_FinOP implements ISimpleExternalService {
         String strSelWorkplace;
         if (u_selWorkplace != null)
         {
-            SelWorkplaceList.addAll((Collection<java.lang.String>)u_selWorkplace.getValue()); 
+            SelWorkplaceList.addAll((Collection<String>)u_selWorkplace.getValue()); 
             strSelWorkplace = SelWorkplaceList.toString().trim();
         }
         else

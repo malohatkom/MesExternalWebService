@@ -131,7 +131,6 @@ public class U_PZData implements ISimpleExternalService
             rs = stmt.executeQuery(sql);
             while (rs.next()) 
             {
-                
                 String OPName = rs.getString("ag_bez");
                 String MKName = rs.getString("nmkp"); //"merkmal_bez_18");
 

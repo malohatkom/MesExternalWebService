@@ -74,11 +74,11 @@ public class UPackingschemeInsert {
                 int old = Integer.parseInt(PackingSchemeOldKey.getValue().toString());
                 int id = Integer.parseInt(aParam.getCreatedSerial().toString());
                     
-                String copyResources = "";
+                String copyResources;
                     
                 if (PackingSchemeCopyMaterials != null ? "true".equals(PackingSchemeCopyMaterials.getValue().toString()) : false)
                 {
-                    if (DebugMessages) write("UPackingschemeInsert", "PackingSchemeCopyMaterials = " + PackingSchemeCopyMaterials.getValue().toString());
+                    if (DebugMessages) write("UPackingschemeInsert", "PackingSchemeCopyMaterials = " + (PackingSchemeCopyMaterials != null && PackingSchemeCopyMaterials.getValue() != null ? PackingSchemeCopyMaterials.getValue().toString() : "null"));
                     copyResources = 
                         " Set IDENTITY_INSERT U_PackingMaterial On " +
                         " Insert Into " +
@@ -121,7 +121,7 @@ public class UPackingschemeInsert {
                     
                 if (PackingSchemeCopyLabels != null ? "true".equals(PackingSchemeCopyLabels.getValue().toString()) : false)
                 {
-                    if (DebugMessages) write("UPackingschemeInsert", "PackingSchemeCopyLabels = " + PackingSchemeCopyLabels.getValue().toString());
+                    if (DebugMessages) write("UPackingschemeInsert", "PackingSchemeCopyLabels = " + (PackingSchemeCopyLabels != null && PackingSchemeCopyLabels.getValue() != null ? PackingSchemeCopyLabels.getValue().toString() : "null"));
                     copyResources = 
                         " Set IDENTITY_INSERT U_PackingLabel On " +
                         " Insert Into " +

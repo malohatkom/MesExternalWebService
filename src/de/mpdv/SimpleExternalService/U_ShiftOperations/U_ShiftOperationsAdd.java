@@ -59,32 +59,36 @@ public class U_ShiftOperationsAdd implements ISimpleExternalService
         
         SpecialParam pOperation_id = null;
         SpecialParam pShiftorder_id = null;
+        SpecialParam pShiftorder_key = null;
         String sOperation_id = "";
         String sShiftorder_id = "";
+        String sShiftorder_key = "";
         try
         {
             pOperation_id = request.getSpecialParam("operation.id");
             pShiftorder_id = request.getSpecialParam("shiftorder.id");
-            //if (printDebug) System.out.println(String.format("pOperation_id = %s", pOperation_id));
-            if (printDebug) write("U_ShiftOperationsAdd", String.format("pOperation_id = %s", pOperation_id));
+            pShiftorder_key = request.getSpecialParam("shiftorder.key");
+            if (printDebug) 
+            {
+                write("U_ShiftOperationsAdd", String.format("pOperation_id = %s pShiftorder_id = %s pShiftorder_key = %s", pOperation_id, pShiftorder_id, pShiftorder_key));
+            }
         }
         catch (Exception e)
         {
             pOperation_id = null;
             pShiftorder_id = null;
+            pShiftorder_key = null;
             if (printDebug) write("U_ShiftOperationsAdd", "Error get special params");
         }
         finally
         {
-            if (pOperation_id != null ? pOperation_id.getValue() != null : false) sOperation_id = pOperation_id.getValue().toString();        
-            if (pShiftorder_id != null ? pShiftorder_id.getValue() != null : false) sShiftorder_id = pShiftorder_id.getValue().toString();        
+            if (pOperation_id != null) sOperation_id = pOperation_id.getValue() != null ? pOperation_id.getValue().toString() : "";
+            if (pShiftorder_id != null) sShiftorder_id = pShiftorder_id.getValue() != null ? pShiftorder_id.getValue().toString() : "";
+            if (pShiftorder_key != null) sShiftorder_key = pShiftorder_key.getValue() != null ? pShiftorder_key.getValue().toString() : "";
         }
-        
-        if (printDebug) write("U_ShiftOperationsAdd", "U_ShiftOperationsAdd");
         
         if (printDebug)
         {
-            this.logger.debug("Release shift order");
             String s = "";
             for (String key: request.getSpecialParamMap().keySet())
             {
@@ -93,7 +97,7 @@ public class U_ShiftOperationsAdd implements ISimpleExternalService
             write("U_ShiftOperationsAdd", "SpecialParamMap = [ " + s + " ]");
         }
         
-        if (!"".equals(sOperation_id) && !"".equals(sShiftorder_id))
+        if (!"".equals(sOperation_id) && !"".equals(sShiftorder_id) && !"".equals(sShiftorder_key))
         {
             if (printDebug) write("U_ShiftOperationsAdd", "U_ShiftOperationsAdd has params");
             IDbConnectionProvider connProv = (IDbConnectionProvider)factory.fetchUtil("DbConnectionProvider");
@@ -199,7 +203,8 @@ public class U_ShiftOperationsAdd implements ISimpleExternalService
                     String sql = 
                     " INSERT INTO u_shiftoperations " +
                     "   ( " +
-                    "       shiftorder_nr " +
+                    "       shiftorder_id " +
+                    "       ,shiftorder_nr " +
                     "       ,kostenstelle " +
                     "       ,auftrag_nr " +
                     "       ,masch_nr " +
@@ -218,7 +223,8 @@ public class U_ShiftOperationsAdd implements ISimpleExternalService
                     "       ,bearb_time " +
                     "   ) " +
                     " Select " +
-                    "   N'" + sShiftorder_id + "' " +
+                    "   " + sShiftorder_key + " " +
+                    "   ,N'" + sShiftorder_id + "' " +
                     "   ,kostenstelle" +
                     "   ,ab_auftrag_nr " +
                     "   ,IsNull(masch_nr, '') " +
@@ -243,11 +249,6 @@ public class U_ShiftOperationsAdd implements ISimpleExternalService
                     if (printDebug) write("U_ShiftOperationsAdd", sql);
                     int affectedRows = stmt != null ? stmt.executeUpdate(sql) : 0;
                     if (printDebug) write("U_ShiftOperationsAdd", String.format("affectedRows = %s", affectedRows));
-                    if (printDebug)
-                    {
-                        if (printDebug) write("U_ShiftOperationsAdd", sql);
-                        if (printDebug) write("U_ShiftOperationsAdd", "Add " + affectedRows + " OPs");
-                    }
                     if (stmt != null) stmt.close();
                     if (con != null) con.close();
                 }
@@ -260,9 +261,11 @@ public class U_ShiftOperationsAdd implements ISimpleExternalService
             
             IDataTableBuilder builder = factory.fetchUtil("DataTableBuilder");
             builder.addCol("shiftorder.id", DataType.STRING);
+            builder.addCol("shiftorder.key", DataType.INTEGER);
             builder.addCol("operation.id", DataType.STRING);
             builder.addRow();
             builder.value(sShiftorder_id);
+            builder.value(Integer.parseInt(sShiftorder_key));
             builder.value(sOperation_id);
             res = new SesResultBuilder().addDataTable(builder.build()).build();
         }
