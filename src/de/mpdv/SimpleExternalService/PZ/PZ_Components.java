@@ -33,90 +33,85 @@ import de.mpdv.sdi.systemutility.ISystemUtilFactory;
    
     	IDataTableBuilder builder = factory.fetchUtil("DataTableBuilder");
     	
-		builder.addCol("batch.id", DataType.STRING);
-		builder.addCol("batch.material_type", DataType.STRING);
-		builder.addCol("u_batch.certificate", DataType.STRING);
-		builder.addCol("u_batch.manufacturer", DataType.STRING);
-		builder.addCol("u_batch.listnumber", DataType.STRING);
-		builder.addCol("u_batch.meltnumber", DataType.STRING  );
-		builder.addCol("u_batch.batchnumber", DataType.STRING);
-		builder.addCol("order.id", DataType.STRING);
-		builder.addCol("batch.articledesignation", DataType.STRING  );
-		builder.addCol("batch.article", DataType.STRING);
-		
-		Connection conn = conProvider.fetchDbConnection();
-		
-		
-		
-		Statement stmt = null;
-		ResultSet rs = null;
-		
-		
-		SpecialParam u_order = request.getSpecialParam("order.id");
-		String strorder= (String) u_order.getValue();
-		
-		String sql="select edll_nr,el_hztyp, attrib_120,attrib_107, lot,attrib_103 ,attrib_102,auftrag_nr,artikel_bez,artikel from pz_components ('"+ strorder+"') Order by Right(auftrag_nr, 4), el_hztyp";
-
-		//SpecialParam u_order = request.getSpecialParam("order.id");
-		//if (u_order != null)
-		//{
-		//	String strorder= (String) u_order.getValue();
-		//	if (strorder != null)
-			//	{
-			//		sql += " and  auftrag_nr= '" + strorder + "'";
-		//	}
-	//	}
-
-		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery(sql);
-			while (rs.next()) {
-				builder.addRow();
-				builder.value(rs.getString("edll_nr"));
-				builder.value(rs.getString("el_hztyp"));
-				builder.value(rs.getString("attrib_120"));
-				builder.value(rs.getString("attrib_107"));
-				builder.value(rs.getString("lot"));
-				builder.value(rs.getString("attrib_103"));
-				builder.value(rs.getString("attrib_102"));
-				builder.value(rs.getString("auftrag_nr"));
-				builder.value(rs.getString("artikel_bez"));
-				builder.value(rs.getString("artikel"));
-			
-			}
+        builder.addCol("batch.id", DataType.STRING);
+	builder.addCol("batch.material_type", DataType.STRING);
+	builder.addCol("u_batch.certificate", DataType.STRING);
+	builder.addCol("u_batch.manufacturer", DataType.STRING);
+	builder.addCol("u_batch.listnumber", DataType.STRING);
+	builder.addCol("u_batch.meltnumber", DataType.STRING  );
+	builder.addCol("u_batch.batchnumber", DataType.STRING);
+	builder.addCol("order.id", DataType.STRING);
+	builder.addCol("batch.articledesignation", DataType.STRING  );
+	builder.addCol("batch.article", DataType.STRING);
+        builder.addCol("batch.producing_order", DataType.STRING);
+	
+	Connection conn = conProvider.fetchDbConnection();
+	
+	Statement stmt = null;
+	ResultSet rs = null;
+	
+	SpecialParam u_order = request.getSpecialParam("order.id");
+	String strorder= (String) u_order.getValue();
+	
+	String sql=
+        " Select Distinct " +
+        "   edll_nr, " +
+        "   el_hztyp, " +
+        "   attrib_120, " + 
+        "   attrib_107, " +
+        "   lot, " +
+        "   attrib_103, " +
+        "   attrib_102, " +
+        "   auftrag_nr, " +
+        "   artikel_bez, " +
+        "   artikel, " +
+        "   attrib_str05 " +
+        " From " +
+        "   pz_components ('" + strorder+ "') Order by auftrag_nr, el_hztyp";
+        
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+		builder.addRow();
+		builder.value(rs.getString("edll_nr"));
+		builder.value(rs.getString("el_hztyp"));
+		builder.value(rs.getString("attrib_120"));
+		builder.value(rs.getString("attrib_107"));
+		builder.value(rs.getString("lot"));
+		builder.value(rs.getString("attrib_103"));
+		builder.value(rs.getString("attrib_102"));
+		builder.value(rs.getString("auftrag_nr"));
+		builder.value(rs.getString("artikel_bez"));
+		builder.value(rs.getString("artikel"));
+                builder.value(rs.getString("attrib_str05"));
+            }
 	} catch (SQLException e) {
-		e.printStackTrace();
-		logger.error("Exception while accessing database", e);
-		throw new SesException("lkDbError",
-				"Exception while accessing database", e);
+            logger.error("Exception while accessing database", e);
+            throw new SesException("lkDbError", "Exception while accessing database", e);
 	} finally {
-		try {
-			if (rs != null) {
-				rs.close();
-			}
-		} catch (SQLException e) {
-			logger.error("Exception while closing SQL-ResultSet", e);
+            try {
+		if (rs != null) {
+                    rs.close();
 		}
-		try {
-			if (stmt != null) {
-				stmt.close();
-			}
-		} catch (SQLException e) {
-			logger.error("Exception while closing SQL-Statement", e);
+            } catch (SQLException e) {
+		logger.error("Exception while closing SQL-ResultSet", e);
+            }
+            try {
+		if (stmt != null) {
+                    stmt.close();
 		}
-		try {
-			if (conn != null) {
-				conn.close();
-			}
-		} catch (SQLException e) {
-			logger.error("Exception while closing SQL-Connection", e);
+            } catch (SQLException e) {
+		logger.error("Exception while closing SQL-Statement", e);
+            }
+            try {
+		if (conn != null) {
+                    conn.close();
 		}
+            } catch (SQLException e) {
+		logger.error("Exception while closing SQL-Connection", e);
+            }
 	}
-
-		return new SesResultBuilder().addDataTable(builder.build()).build();
-
+	return new SesResultBuilder().addDataTable(builder.build()).build();
     }
 }
-
-
-

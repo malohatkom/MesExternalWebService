@@ -33,42 +33,31 @@ import java.util.logging.Logger;
 public class U_PZData implements ISimpleExternalService 
 {
     public static String clobStringConversion(Clob clb) throws IOException, SQLException
-     {
-       if (clb == null)
-      return  "";
+    {
+        if (clb == null)
+            return  "";
               
-       StringBuilder str = new StringBuilder();
-       String strng;
-                
+        StringBuilder str = new StringBuilder();
+        String strng;
       
-     BufferedReader bufferRead = new BufferedReader(clb.getCharacterStream());
+        BufferedReader bufferRead = new BufferedReader(clb.getCharacterStream());
      
-       while ((strng=bufferRead .readLine())!=null)
-        str.append(strng);
-     
-       return str.toString();
-     }        
-
+        while ((strng=bufferRead.readLine())!= null)
+            str.append(strng);
+        return str.toString();
+    }        
     
     public static void write(String fileName, String text) {
-        //Определяем файл
         File file = new File(fileName);
-
         try {
-            //проверяем, что если файл не существует то создаем его
             if(!file.exists()){
                 file.createNewFile();
             }
-
-            //PrintWriter обеспечит возможности записи в файл
             PrintWriter out = new PrintWriter(file.getAbsoluteFile());
 
             try {
-                //Записываем текст у файл
                 out.println(text);
             } finally {
-                //После чего мы должны закрыть файл
-                //Иначе файл не запишется
                 out.close();
             }
         } catch(IOException e) {
@@ -134,7 +123,7 @@ public class U_PZData implements ISimpleExternalService
                 String OPName = rs.getString("ag_bez");
                 String MKName = rs.getString("nmkp"); //"merkmal_bez_18");
 
-                String Result = null; //rs.getString(//"messwert");
+                String Result = rs.getString("znkp");
                 String LValue = rs.getString("mizn"); //"utg");
                 String NValue = rs.getString("nozn"); //"sw");
                 String UValue = rs.getString("mazn"); //"otg");

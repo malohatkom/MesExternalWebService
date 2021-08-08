@@ -49,7 +49,7 @@ public class UShiftordersList {
         SdiAugmentSqlParam sqlParams = (SdiAugmentSqlParam)param.get("param");
         if (debugPrint)
         {
-            write("UShiftordersList", " Select " + (sqlParams.getSelect() != null ? sqlParams.getSelect() : "") + " From " + (sqlParams.getFrom() != null ? sqlParams.getFrom() : "") + " Where " + (sqlParams.getWhere() != null ? sqlParams.getWhere() : ""));
+            write("UShiftordersList", " Select " + (sqlParams.getSelect() != null ? sqlParams.getSelect() : "") + " From " + (sqlParams.getFrom() != null ? sqlParams.getFrom() : "") + " Where " + (sqlParams.getWhere() != null ? sqlParams.getWhere() : "") + (sqlParams.getGroupBy() != null ? "Group By " + sqlParams.getGroupBy() : ""));
         }
     }
     
