@@ -1,6 +1,6 @@
 package de.mpdv.SimpleExternalService.UToolsUsing;
 
-import de.mpdv.SimpleExternalService.UToolsUsing.UToolsUsing;
+import de.mpdv.SimpleExternalService.UToolsUsing.UToolsUsingList;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -69,7 +69,7 @@ public class UToolsUsingDate implements ISimpleExternalService {
                     datPeriodStartDate = MOCFormat.parse(reqStartDate);
                     strPeriodStartDate =  sqlFormat.format(datPeriodStartDate);
                 } catch (ParseException ex) {
-                    Logger.getLogger(UToolsUsing.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(UToolsUsingList.class.getName()).log(Level.SEVERE, null, ex);
                 }
             Date datPeriodEndDate;
                 try {
@@ -77,7 +77,7 @@ public class UToolsUsingDate implements ISimpleExternalService {
                     
                     strPeriodEndDate =  sqlFormat.format(datPeriodEndDate);
                 } catch (ParseException ex) {
-                    Logger.getLogger(UToolsUsing.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(UToolsUsingList.class.getName()).log(Level.SEVERE, null, ex);
                 }
         }
                 
